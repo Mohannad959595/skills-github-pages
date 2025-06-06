@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PuroClean Office Search</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background-color: #1a1a1a;
+      color: #ccc;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      flex-direction: column;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .logo-text {
+      font-size: 40px;
+      font-weight: bold;
+    }
+    .logo-text .red {
+      color: #ff0000;
+    }
+    .logo-text .black {
+      color: #000;
+      background-color: white;
+      padding: 0 5px;
+    }
+    header h1 {
+      font-size: 18px;
+      margin: 5px 0;
+    }
+    header p {
+      font-size: 14px;
+      color: #d32f2f;
+      margin: 0;
+    }
+    main {
+      background-color: #2d2d2d;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      width: 90%;
+      max-width: 800px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+    h2 {
+      color: #d32f2f;
+      font-size: 20px;
+      margin-bottom: 15px;
+    }
+    .input-group {
+      margin-bottom: 15px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+    input[type="text"] {
+      padding: 10px;
+      width: 200px;
+      font-size: 14px;
+      background-color: #4a4a4a;
+      border: 1px solid #666;
+      color: #fff;
+      border-radius: 5px;
+    }
+    button {
+      padding: 12px 25px;
+      font-size: 16px;
+      background-color: #d32f2f;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+      max-width: 420px;
+      transition: background-color 0.3s;
+      font-weight: bold;
+    }
+    button:hover {
+      background-color: #b71c1c;
+    }
+    #results {
+      margin-top: 30px;
+      text-align: left;
+      display: none;
+      width: 100%;
+    }
+    .results-header {
+      color: #d32f2f;
+      border-bottom: 1px solid #444;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+    }
+    .office-result {
+      background-color: #3a3a3a;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+      border-left: 4px solid #d32f2f;
+    }
+    .office-name {
+      color: #d32f2f;
+      font-weight: bold;
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+    .office-detail {
+      margin-bottom: 5px;
+      line-height: 1.5;
+    }
+    .no-results {
+      color: #d32f2f;
+      font-style: italic;
+      text-align: center;
+      padding: 20px;
+    }
+    .highlight {
+      background-color: #d32f2f;
+      color: white;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    @media (max-width: 600px) {
+      .logo-text {
+        font-size: 32px;
+      }
+      input[type="text"] {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-text"><span class="red">Puro</span><span class="black">Clean</span><sup>®</sup></div>
+    <h1>Find your nearest PuroClean office</h1>
+    <p>The Paramedics of Property Damage</p>
+  </header>
+
+  <main>
+    <h2>Search Office by Postal Code</h2>
+    <form id="officeSearchForm">
+      <div class="input-group">
+        <input type="text" id="postalCode1" placeholder="Enter first postal code (e.g. M5V)" 
+               maxlength="3" pattern="[A-Za-z][0-9][A-Za-z]" 
+               title="Enter first 3 characters of postal code (e.g. M5V)" required>
+        <input type="text" id="postalCode2" placeholder="Enter second postal code (optional)" 
+               maxlength="3" pattern="[A-Za-z][0-9][A-Za-z]" 
+               title="Enter first 3 characters of postal code (e.g. L4N)">
+      </div>
+      <button type="submit">Search Offices</button>
+    </form>
+    
+    <div id="results">
+      <h3 class="results-header">Search Results</h3>
+      <div id="resultsContainer"></div>
+    </div>
+  </main>
+
+  <script>
+    // Office data extracted from the Excel file
+    const officeData = [
+      {
+        name: "Barrie",
+        address: "27 Hamilton Rd, Barrie, ON L4N 8Y6",
+        phone: "(705) 797-1899",
+        email: "Barrie@puroclean.ca",
+        fsas: ["L4M","L4N","L9S","LOL","L9M","L4R","L9Z","L0M","L9J","L0K","LOK1N0","L0K2C0","L0K0B1","L0K1R0","L0K2A0","L0K0A2","L0K0AS","L0K2E1"]
+      },
+      {
+        name: "Belleville",
+        address: "6 North Front Street, Belleville, ON K8P 3A7",
+        phone: "(613) 813-7285",
+        email: "Belleville@puroclean.ca",
+        fsas: ["K7R","K8N","K8P","K8R","K8V","K9A","L1A","K0K1T0","K0K0A8","K0K2J0","K0K3L0","K0K0B3","K0K2B0","K0K0C9","K0K1P0","K0K2T0","K0K0B5","K0K0E6","K0K2P0","K0K3M0","K0K3E0","K0L2Z0","K0L0C4","K0K0C6","K0K0C5","K0K1C0","K0K0B9","K0K1S0","K0K0A4","K0K0B6","K0K1A0","K0K2V0","K0K3C0","K0K0B1","K0K0C3","K0K0A6","K0K2S0","K0K2K0","K0K1W0","K0K0A1","K0K3A0","K0K1X0","K0K3H0","K0K0B2","K0K2Y0","K0K2N0","K0K2L0","K0K3J0","K0K2W0","K0K0E1","K0K2Z0","K0K2A0","K0K3G0","K0K0A2","K0K0A9","K0K1N0","K0K1J0","K0K3N0","K0K1Z0","K0K0E4","K0K0C1","K0K1H0","K0K1L0","K0K2H0","K0K2E0","K0K2X0","K0K0E5","K0K1M0","K0K0B7","K0K3K0","K0K0C7","K0K0A0","K0K0E2","K0L1L0","K0K0E7","K0K0A3","K0K0C2","K0K0A7","K0K0B4","K0K0A5"]
+      },
+      {
+        name: "Brantford/Simcoe",
+        address: "36-20 Roy Blvd, Brantford, ON N3R 7K2",
+        phone: "(519) 754-4400",
+        email: "BrantfordSimcoe@puroclean.ca",
+        fsas: ["N0A","N0E","N1A","N3L","N3P","N3R","N3S","N3T","N3V","N3W","N3Y","N4B"]
+      },
+      {
+        name: "Toronto Central",
+        address: "83 Galaxy Blvd, Unit 7, Etobicoke, ON, M9W 5X6",
+        phone: "(647) 340-7876",
+        email: "CentralToronto@puroclean.ca",
+        fsas: ["M9N","M4R","M4V","M4X","M4Y","M5A","M5B","M5C","M5E","M5G","M5H","M5J","M5K","M5L","M5M","M5N","M5P","M5R","M5S","M5T","M5V","M5W","M5X","M6A","M6B","M6C","M6E","M6G","M6H","M6J","M6K","M6L","M6M","M6N","M6P","M6R","M6S","M7A"]
+      },
+      {
+        name: "Ottawa West",
+        address: "18G Enterprise Ave, Ottawa, ON K2G 0A6",
+        phone: "(613) 791-1774",
+        email: "OttawaWest@puroclean.ca",
+        fsas: ["K1A","K1P","K1R","K1S","K1Y","K1Z","K2A","K2B","K2C","K2E","K2G","K2H","K2J","K2K","K2L","K2M","K2R","K2S","K2T","K2V","K2W","K7C","K7S","K0A1P0","K0A0E4","K0A0A3","K0A0C8","K0A2Z0","K0A3P0","K0A1B0","K0A2H0","K0A0E3","K0A1L0","K0A0C1","K0A0A7","K0A1X0","K0A0B7","K0A3M0","K0A2T0","K0A0B5","K4M0A9","K4M0B3","K4M0E8","K4M0A8","K4M0B2","K4M1C3","K4M1K7","K4M1L5","K4M1K8","K4M1C6","K4M0W5","K4M1E1","K4M1C9","K4M0X4","K4M1C8","K4M0M9","K4M0N1","K4M0N4","K4M0N2","K4M0M5","K4M0M6","K4M0M7","K4M0X5","K0A1A0","K0A4A0","K0A1T0","K0A0A4","K4M0N5","K4M0G3","K4M0G2","K4M1K9","K4M0E9","K4M0G4","K4M0G1","K4M1J9","K4M0G5","K4M1J8","K4M0H6","K4M1C7","K4M1K6","K4M1L7","K4M1L6","K4M1A1","K4M0G8","K4M1G5","K4M1G4","K4M1G6","K4M1J7","K4M1G7","K4M1H1","K4M1J6","K4M1L1","K4M0H8","K4M1E2","K4M1G8","K4M1H3"]
+      }
+      // Add more offices as needed from the Excel data
+    ];
+
+    document.getElementById('officeSearchForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const postalCode1 = document.getElementById('postalCode1').value.toUpperCase().trim();
+      const postalCode2 = document.getElementById('postalCode2').value.toUpperCase().trim();
+      
+      if (!postalCode1) {
+        alert('Please enter at least one postal code');
+        return;
+      }
+      
+      if (!isValidPostalCode(postalCode1) || (postalCode2 && !isValidPostalCode(postalCode2))) {
+        alert('Please enter valid postal code formats (e.g. M5V or L4N)');
+        return;
+      }
+      
+      const results = searchOffices(postalCode1, postalCode2);
+      displayResults(results, postalCode1, postalCode2);
+    });
+    
+    function isValidPostalCode(code) {
+      return /^[A-Za-z]\d[A-Za-z]$/.test(code);
+    }
+    
+    function searchOffices(code1, code2) {
+      const matchedOffices = [];
+      
+      officeData.forEach(office => {
+        // Check if first postal code matches
+        const match1 = office.fsas.some(fsa => 
+          fsa.trim().toUpperCase().startsWith(code1.toUpperCase())
+        );
+        
+        // Check if second postal code matches (if provided)
+        let match2 = true;
+        if (code2) {
+          match2 = office.fsas.some(fsa => 
+            fsa.trim().toUpperCase().startsWith(code2.toUpperCase())
+          );
+        }
+        
+        if (match1 && match2) {
+          matchedOffices.push(office);
+        }
+      });
+      
+      return matchedOffices;
+    }
+    
+    function displayResults(offices, code1, code2) {
+      const resultsContainer = document.getElementById('resultsContainer');
+      resultsContainer.innerHTML = '';
+      
+      if (offices.length === 0) {
+        resultsContainer.innerHTML = `
+          <div class="no-results">
+            No offices found matching ${code1 ? `<span class="highlight">${code1}</span>` : ''}
+            ${code2 ? ` and <span class="highlight">${code2}</span>` : ''}
+          </div>
+        `;
+      } else {
+        offices.forEach(office => {
+          const officeDiv = document.createElement('div');
+          officeDiv.className = 'office-result';
+          
+          // Highlight matching FSAs
+          const matchingFsas = [];
+          office.fsas.forEach(fsa => {
+            if (fsa.startsWith(code1) || (code2 && fsa.startsWith(code2))) {
+              matchingFsas.push(`<span class="highlight">${fsa.substring(0,3)}</span>${fsa.substring(3)}`);
+            } else {
+              matchingFsas.push(fsa);
+            }
+          });
+          
+          officeDiv.innerHTML = `
+            <div class="office-name">${office.name}</div>
+            <div class="office-detail"><strong>Address:</strong> ${office.address}</div>
+            <div class="office-detail"><strong>Phone:</strong> ${office.phone}</div>
+            <div class="office-detail"><strong>Email:</strong> ${office.email}</div>
+            <div class="office-detail">
+              <strong>Service Area:</strong> 
+              ${matchingFsas.slice(0, 8).join(', ')}${matchingFsas.length > 8 ? '...' : ''}
+            </div>
+          `;
+          resultsContainer.appendChild(officeDiv);
+        });
+      }
+      
+      document.getElementById('results').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
